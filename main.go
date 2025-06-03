@@ -3,8 +3,16 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"strings"
 )
+
+func execute(filename string) error {
+	cmd := exec.Command("sh", "-c", "./"+filename)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
+}
 
 func main() {
 	err := os.Chdir("examples")
@@ -39,6 +47,10 @@ func main() {
 		}
 		if strings.Contains(string(buffer[:n]), "cronic:") {
 			fmt.Println("Found cronic yaml in", dirEntry.Name())
+			err := execute(dirEntry.Name())
+			if err != nil {
+				panic(err)
+			}
 		}
 	}
 }
