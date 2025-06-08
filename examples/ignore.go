@@ -1,11 +1,6 @@
 ///usr/bin/env go run "$0" "$@"; exit "$?"
 //go:build ignore
 
-// cronic:
-//   name: Example Go Job
-//	 desc: Say hello every 3 seconds
-//	 cron: */3 * * * * *
-
 package main
 
 import (

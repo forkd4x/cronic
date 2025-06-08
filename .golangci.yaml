@@ -1,0 +1,10 @@
+version: "2"
+linters:
+  enable:
+    - cyclop
+    - gocognit
+  settings:
+    cyclop:
+      max-complexity: 20
+    gocognit:
+      min-complexity: 20
