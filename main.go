@@ -4,12 +4,6 @@ import (
 	"os"
 )
 
-type CronicJob struct {
-	Name string
-	Desc string
-	Cron string
-}
-
 func main() {
 	root := "."
 	if len(os.Args) > 1 {
