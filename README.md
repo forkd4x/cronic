@@ -1,5 +1,5 @@
 ## Cronic Scheduler (WIP)
 
 ```sh
-go run .
+go run . examples/
 ```
