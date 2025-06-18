@@ -10,15 +10,15 @@ import (
 	"github.com/goccy/go-yaml"
 )
 
-type CronicJob struct {
+type Job struct {
 	File string
 	Name string
 	Desc string
 	Cron string
 }
 
-func NewJob(file string) (CronicJob, error) {
-	job := CronicJob{
+func NewJob(file string) (Job, error) {
+	job := Job{
 		File: file,
 	}
 	err := job.ParseFile()
@@ -30,7 +30,7 @@ func NewJob(file string) (CronicJob, error) {
 
 }
 
-func (job *CronicJob) ParseFile() error {
+func (job *Job) ParseFile() error {
 	file, err := os.Open(job.File)
 	if err != nil {
 		return fmt.Errorf("failed to open file %s: %w", job.File, err)
@@ -71,7 +71,7 @@ func (job *CronicJob) ParseFile() error {
 	return nil
 }
 
-func (job CronicJob) Execute() error {
+func (job Job) Execute() error {
 	cmd := exec.Command("sh", "-c", "./"+job.File)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr

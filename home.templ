@@ -1,0 +1,10 @@
+package main
+
+templ Home(cronic *Cronic) {
+	<h1>Cronic Scheduler</h1>
+	<ul>
+		for _, job := range cronic.Jobs {
+			<li>{ job.Name }</li>
+		}
+	</ul>
+}
