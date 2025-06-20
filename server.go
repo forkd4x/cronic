@@ -1,14 +1,26 @@
 package main
 
 import (
+	"embed"
+	"io/fs"
 	"net/http"
 
 	"github.com/a-h/templ"
 	"github.com/labstack/echo/v4"
 )
 
+//go:embed static/*
+var staticFiles embed.FS
+
 func NewServer(cronic *Cronic) *echo.Echo {
 	e := echo.New()
+
+	// Serve embedded static files
+	staticFS, err := fs.Sub(staticFiles, "static")
+	if err != nil {
+		panic(err)
+	}
+	e.GET("/static/*", echo.WrapHandler(http.StripPrefix("/static/", http.FileServer(http.FS(staticFS)))))
 
 	e.GET("/", func(c echo.Context) error {
 		return Render(c, http.StatusOK, Home(cronic))
