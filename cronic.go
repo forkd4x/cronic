@@ -9,6 +9,7 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/forkd4x/cronic/models"
 	"github.com/go-co-op/gocron/v2"
 	"github.com/goforj/godump"
 	"github.com/labstack/echo/v4"
@@ -16,7 +17,7 @@ import (
 
 type Cronic struct {
 	Context   context.Context
-	Jobs      []Job
+	Jobs      []models.Job
 	Scheduler gocron.Scheduler
 	Server    *echo.Echo
 }
@@ -75,7 +76,7 @@ func (cronic *Cronic) LoadJobs() error {
 			// TODO: Recursively load jobs in subdirectories
 			continue
 		}
-		job := Job{
+		job := models.Job{
 			File: dirEntry.Name(),
 		}
 		err := job.ParseFile()
