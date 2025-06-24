@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"time"
 
 	"github.com/forkd4x/cronic/models"
@@ -17,7 +18,6 @@ import (
 
 type Cronic struct {
 	Context   context.Context
-	Jobs      []models.Job
 	Scheduler gocron.Scheduler
 	Server    *echo.Echo
 }
@@ -32,6 +32,10 @@ func NewCronic(root string) (*Cronic, error) {
 		if err != nil {
 			return cronic, fmt.Errorf("failed to chdir to %s: %w", root, err)
 		}
+	}
+	err = models.Init()
+	if err != nil {
+		return cronic, err
 	}
 	cronic.Scheduler, err = gocron.NewScheduler()
 	if err != nil {
@@ -89,7 +93,37 @@ func (cronic *Cronic) LoadJobs() error {
 		}
 		fmt.Println("Found cronic yaml in", job.File)
 		godump.Dump(job)
-		cronic.Jobs = append(cronic.Jobs, job)
+
+		var dbJob models.Job
+		where := "file = ? AND name = ?"
+		result := models.DB.
+			Where(where, job.File, job.Name).
+			Order("updated_at desc").
+			Limit(1).
+			Find(&dbJob)
+		if result.RowsAffected == 0 {
+			result = models.DB.
+				Where(strings.Replace(where, " AND ", " OR ", 1), job.File, job.Name).
+				Order("updated_at desc").
+				Limit(1).
+				Find(&dbJob)
+		}
+		if result.RowsAffected == 0 {
+			result := models.DB.Create(&job)
+			if result.Error != nil {
+				return fmt.Errorf("failed to insert job: %w", result.Error)
+			}
+		} else if result.Error != nil {
+			return fmt.Errorf("failed querying database for job: %w", result.Error)
+		} else {
+			job.ID = dbJob.ID
+			job.CreatedAt = dbJob.CreatedAt
+			result := models.DB.Save(&job)
+			if result.Error != nil {
+				return fmt.Errorf("failed updating job: %w", result.Error)
+			}
+		}
+
 		_, err = cronic.Scheduler.NewJob(
 			gocron.CronJob(job.Cron, true),
 			gocron.NewTask(

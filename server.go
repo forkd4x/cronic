@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/a-h/templ"
+	"github.com/forkd4x/cronic/models"
 	"github.com/forkd4x/cronic/templates"
 	"github.com/labstack/echo/v4"
 )
@@ -24,7 +25,11 @@ func NewServer(cronic *Cronic) *echo.Echo {
 	e.GET("/static/*", echo.WrapHandler(http.StripPrefix("/static/", http.FileServer(http.FS(staticFS)))))
 
 	e.GET("/", func(c echo.Context) error {
-		return Render(c, http.StatusOK, templates.Home(cronic.Jobs))
+		jobs, err := models.GetJobs()
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError)
+		}
+		return Render(c, http.StatusOK, templates.Home(jobs))
 	})
 
 	return e

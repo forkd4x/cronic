@@ -6,28 +6,21 @@ import (
 	"os/exec"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/goccy/go-yaml"
+	"gorm.io/gorm"
 )
 
 type Job struct {
-	File string
-	Name string
-	Desc string
-	Cron string
-}
-
-func NewJob(file string) (Job, error) {
-	job := Job{
-		File: file,
-	}
-	err := job.ParseFile()
-	if err != nil {
-		return job, fmt.Errorf("failed to parse file %s: %w", file, err)
-	}
-
-	return job, nil
-
+	ID        uint `gorm:"primaryKey"`
+	File      string
+	Name      string
+	Desc      string
+	Cron      string
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt gorm.DeletedAt
 }
 
 func (job *Job) ParseFile() error {
@@ -76,4 +69,10 @@ func (job Job) Execute() error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
+}
+
+func GetJobs() ([]Job, error) {
+	var jobs []Job
+	result := DB.Find(&jobs)
+	return jobs, result.Error
 }
