@@ -17,6 +17,7 @@ func Init() error {
 	}
 	return DB.AutoMigrate(
 		&Job{},
+		&Log{},
 		&Run{},
 	)
 }
