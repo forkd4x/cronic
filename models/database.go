@@ -15,5 +15,8 @@ func Init() error {
 	if err != nil {
 		return fmt.Errorf("failed to open database file: %w", err)
 	}
-	return DB.AutoMigrate(&Job{})
+	return DB.AutoMigrate(
+		&Job{},
+		&Run{},
+	)
 }

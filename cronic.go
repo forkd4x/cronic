@@ -128,7 +128,7 @@ func (cronic *Cronic) LoadJobs() error {
 			gocron.CronJob(job.Cron, true),
 			gocron.NewTask(
 				func(filename string) {
-					err := job.Execute()
+					err := job.Run()
 					if err != nil {
 						panic(err)
 					}

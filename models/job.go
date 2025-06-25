@@ -3,7 +3,6 @@ package models
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"regexp"
 	"strings"
 	"time"
@@ -62,13 +61,6 @@ func (job *Job) ParseFile() error {
 		return fmt.Errorf("failed to parse YAML %s: %w", yamlData, err)
 	}
 	return nil
-}
-
-func (job Job) Execute() error {
-	cmd := exec.Command("sh", "-c", "./"+job.File)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	return cmd.Run()
 }
 
 func GetJobs() ([]Job, error) {
