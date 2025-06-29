@@ -9,6 +9,11 @@ require (
 )
 
 require (
+	github.com/r3labs/sse/v2 v2.10.0
+	gopkg.in/cenkalti/backoff.v1 v1.1.0 // indirect
+)
+
+require (
 	github.com/a-h/parse v0.0.0-20250122154542-74294addb73e // indirect
 	github.com/andybalholm/brotli v1.1.0 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
@@ -28,7 +33,7 @@ require (
 
 require (
 	github.com/a-h/templ v0.3.898
-	github.com/google/uuid v1.6.0 // indirect
+	github.com/google/uuid v1.6.0
 	github.com/jonboulle/clockwork v0.5.0 // indirect
 	github.com/labstack/echo/v4 v4.13.4
 	github.com/labstack/gommon v0.4.2 // indirect

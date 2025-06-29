@@ -15,7 +15,7 @@ type Run struct {
 	EndedAt   *time.Time
 }
 
-func (job Job) Run() error {
+func (job *Job) Run() error {
 	run := Run{
 		JobID:     job.ID,
 		Status:    "Running",
@@ -60,5 +60,6 @@ func (job Job) Run() error {
 	if err := DB.Save(&run).Error; err != nil {
 		return fmt.Errorf("failed to update JobRun: %w", err)
 	}
+	job.Status = run.Status
 	return nil
 }

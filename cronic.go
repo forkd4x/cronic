@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -11,15 +12,17 @@ import (
 	"time"
 
 	"github.com/forkd4x/cronic/models"
+	"github.com/forkd4x/cronic/templates"
 	"github.com/go-co-op/gocron/v2"
 	"github.com/goforj/godump"
-	"github.com/labstack/echo/v4"
+	"github.com/google/uuid"
+	"github.com/r3labs/sse/v2"
 )
 
 type Cronic struct {
 	Context   context.Context
 	Scheduler gocron.Scheduler
-	Server    *echo.Echo
+	Server    Server
 }
 
 func NewCronic(root string) (*Cronic, error) {
@@ -41,16 +44,16 @@ func NewCronic(root string) (*Cronic, error) {
 	if err != nil {
 		return cronic, fmt.Errorf("failed to initialize scheduler: %w", err)
 	}
-	cronic.Server = NewServer(cronic)
+	cronic.Server = NewServer()
 	return cronic, nil
 }
 
 func (cronic *Cronic) Start() {
 	cronic.Scheduler.Start()
 	go func() {
-		err := cronic.Server.Start(":1323")
+		err := cronic.Server.Echo.Start(":1323")
 		if err != nil && err != http.ErrServerClosed {
-			cronic.Server.Logger.Fatal("shutting down the server")
+			cronic.Server.Echo.Logger.Fatal("shutting down the server")
 		}
 
 	}()
@@ -63,7 +66,7 @@ func (cronic *Cronic) Start() {
 func (cronic *Cronic) Shutdown() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	err1 := cronic.Server.Shutdown(ctx)
+	err1 := cronic.Server.Echo.Shutdown(ctx)
 	err2 := cronic.Scheduler.Shutdown()
 	return errors.Join(err1, err2)
 }
@@ -81,7 +84,8 @@ func (cronic *Cronic) LoadJobs() error {
 			continue
 		}
 		job := models.Job{
-			File: dirEntry.Name(),
+			File:   dirEntry.Name(),
+			Status: "Pending",
 		}
 		err := job.ParseFile()
 		if err != nil {
@@ -134,6 +138,33 @@ func (cronic *Cronic) LoadJobs() error {
 					}
 				},
 				dirEntry.Name(),
+			),
+			gocron.WithEventListeners(
+				gocron.BeforeJobRuns(
+					func(jobID uuid.UUID, jobName string) {
+						job.Status = "Running"
+						var b bytes.Buffer
+						if err := templates.Job(job).Render(context.Background(), &b); err != nil {
+							return
+						}
+						cronic.Server.SSE.Publish("updates", &sse.Event{
+							Event: fmt.Append(nil, job.ID),
+							Data:  b.Bytes(),
+						})
+					},
+				),
+				gocron.AfterJobRuns(
+					func(jobID uuid.UUID, jobName string) {
+						var b bytes.Buffer
+						if err := templates.Job(job).Render(context.Background(), &b); err != nil {
+							return
+						}
+						cronic.Server.SSE.Publish("updates", &sse.Event{
+							Event: fmt.Append(nil, job.ID),
+							Data:  b.Bytes(),
+						})
+					},
+				),
 			),
 		)
 		if err != nil {

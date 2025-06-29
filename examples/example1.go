@@ -13,10 +13,13 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"time"
 )
 
 func main() {
 	_, filename, _, _ := runtime.Caller(0)
 	goPath, _ := exec.LookPath("go")
 	fmt.Printf("Hello, from %s using %s\n", filepath.Base(filename), goPath)
+	time.Sleep(time.Second)
+	fmt.Printf("Hello, again, from %s using %s\n", filepath.Base(filename), goPath)
 }

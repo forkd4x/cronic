@@ -17,6 +17,7 @@ type Job struct {
 	Name      string
 	Desc      string
 	Cron      string
+	Status    string
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt
