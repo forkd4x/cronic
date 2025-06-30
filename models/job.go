@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/goccy/go-yaml"
+	"github.com/lnquy/cron"
 	"gorm.io/gorm"
 )
 
@@ -62,6 +63,18 @@ func (job *Job) ParseFile() error {
 		return fmt.Errorf("failed to parse YAML %s: %w", yamlData, err)
 	}
 	return nil
+}
+
+func (job Job) CronHuman() string {
+	exprDesc, err := cron.NewDescriptor()
+	if err != nil {
+		return job.Cron
+	}
+	desc, err := exprDesc.ToDescription(job.Cron, cron.Locale_en)
+	if err != nil {
+		return job.Cron
+	}
+	return desc
 }
 
 func GetJobs() ([]Job, error) {

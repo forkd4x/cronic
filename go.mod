@@ -8,6 +8,8 @@ require (
 	github.com/goforj/godump v1.2.0
 )
 
+require github.com/lnquy/cron v1.1.1
+
 require (
 	github.com/r3labs/sse/v2 v2.10.0
 	gopkg.in/cenkalti/backoff.v1 v1.1.0 // indirect

@@ -20,7 +20,7 @@ templ Job(job models.Job) {
 		<div class="list-col-grow">
 			<div class="font-bold">{ job.Name }</div>
 			<div>{ job.Desc }</div>
-			<div>{ job.Cron }</div>
+			<div>{ job.Cron } ({ job.CronHuman() })</div>
 			<div>Status: <span class={ getStatusClass(job.Status) }>{ job.Status }</span></div>
 		</div>
 		<button class="btn btn-square btn-ghost self-center">
