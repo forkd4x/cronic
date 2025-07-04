@@ -1,6 +1,10 @@
 package templates
 
-import "github.com/forkd4x/cronic/models"
+import (
+	"time"
+
+	"github.com/forkd4x/cronic/models"
+)
 
 func getStatusClass(status string) string {
 	switch status {
@@ -15,6 +19,20 @@ func getStatusClass(status string) string {
 	}
 }
 
+func formatTime(t *time.Time) string {
+	if t == nil {
+		return ""
+	}
+	return t.Format("01/02/2006 15:04:05")
+}
+
+func formatDuration(d *time.Duration) string {
+	if d == nil {
+		return ""
+	}
+	return d.Round(time.Second).String()
+}
+
 templ Job(job models.Job) {
 	<li class="list-row hover:bg-base-300" sse-swap={ job.ID } hx-swap="outerHTML">
 		<div class="list-col-grow">
@@ -22,6 +40,9 @@ templ Job(job models.Job) {
 			<div>{ job.Desc }</div>
 			<div>{ job.Cron } ({ job.CronHuman() })</div>
 			<div>Status: <span class={ getStatusClass(job.Status) }>{ job.Status }</span></div>
+			<div>Last Run: { formatTime(job.LastRun) }</div>
+			<div>Duration: { formatDuration(job.Duration) }</div>
+			<div>Next Run: { formatTime(job.NextRun) }</div>
 		</div>
 		<button class="btn btn-square btn-ghost self-center">
 			<svg

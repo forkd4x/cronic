@@ -122,13 +122,17 @@ func (cronic *Cronic) LoadJobs() error {
 		} else {
 			job.ID = dbJob.ID
 			job.CreatedAt = dbJob.CreatedAt
+			job.LastRun = dbJob.LastRun
+			job.Duration = dbJob.Duration
+			job.NextRun = dbJob.NextRun
 			result := models.DB.Save(&job)
 			if result.Error != nil {
 				return fmt.Errorf("failed updating job: %w", result.Error)
 			}
 		}
 
-		_, err = cronic.Scheduler.NewJob(
+		var scheduledJob gocron.Job
+		scheduledJob, err = cronic.Scheduler.NewJob(
 			gocron.CronJob(job.Cron, true),
 			gocron.NewTask(
 				func(filename string) {
@@ -142,7 +146,12 @@ func (cronic *Cronic) LoadJobs() error {
 			gocron.WithEventListeners(
 				gocron.BeforeJobRuns(
 					func(jobID uuid.UUID, jobName string) {
+						now := time.Now()
 						job.Status = "Running"
+						job.LastRun = &now
+						job.NextRun = nil
+						models.DB.Save(&job)
+
 						var b bytes.Buffer
 						if err := templates.Job(job).Render(context.Background(), &b); err != nil {
 							return
@@ -155,6 +164,15 @@ func (cronic *Cronic) LoadJobs() error {
 				),
 				gocron.AfterJobRuns(
 					func(jobID uuid.UUID, jobName string) {
+						if job.LastRun != nil {
+							duration := time.Since(*job.LastRun)
+							job.Duration = &duration
+						}
+						if nextRun, err := scheduledJob.NextRun(); err == nil {
+							job.NextRun = &nextRun
+						}
+						models.DB.Save(&job)
+
 						var b bytes.Buffer
 						if err := templates.Job(job).Render(context.Background(), &b); err != nil {
 							return

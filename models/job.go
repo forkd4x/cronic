@@ -19,6 +19,9 @@ type Job struct {
 	Desc      string
 	Cron      string
 	Status    string
+	LastRun   *time.Time
+	Duration  *time.Duration
+	NextRun   *time.Time
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt
