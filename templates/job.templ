@@ -9,11 +9,15 @@ import (
 func getStatusClass(status string) string {
 	switch status {
 	case "Pending":
-		return "text-accent"
+		return "bg-light text-secondary"
 	case "Running":
 		return "text-primary"
 	case "Success":
-		return "text-success"
+		return "bg-success bg-opacity-10 text-success"
+	case "Warning":
+		return "bg-warning bg-opacity-10 text-warning"
+	case "Error":
+		return "bg-danger bg-opacity-10 text-danger"
 	default:
 		return ""
 	}
@@ -30,35 +34,17 @@ func formatDuration(d *time.Duration) string {
 	if d == nil {
 		return ""
 	}
-	return d.Round(time.Second).String()
+	return d.Round(time.Second/100).String()
+	//return time.Unix(0, 0).UTC().Add(*d).Format("15h:04m:05s")
 }
 
 templ Job(job models.Job) {
-	<li class="list-row hover:bg-base-300" sse-swap={ job.ID } hx-swap="outerHTML">
-		<div class="list-col-grow">
-			<div class="font-bold">{ job.Name }</div>
-			<div>{ job.Desc }</div>
-			<div>{ job.Cron } ({ job.CronHuman() })</div>
-			<div>Status: <span class={ getStatusClass(job.Status) }>{ job.Status }</span></div>
-			<div>Last Run: { formatTime(job.LastRun) }</div>
-			<div>Duration: { formatDuration(job.Duration) }</div>
-			<div>Next Run: { formatTime(job.NextRun) }</div>
-		</div>
-		<button class="btn btn-square btn-ghost self-center">
-			<svg
-				xmlns="http://www.w3.org/2000/svg"
-				fill="none"
-				viewBox="0 0 24 24"
-				stroke-width="1.5"
-				stroke="currentColor"
-				class="size-6"
-			>
-				<path
-					stroke-linecap="round"
-					stroke-linejoin="round"
-					d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z"
-				></path>
-			</svg>
-		</button>
-	</li>
+	<tr sse-swap={ job.ID } hx-swap="outerHTML">
+		<td>{ job.Name }</td>
+		<td>{ job.CronHuman() }</td>
+		<td>{ formatTime(job.LastRun) }</td>
+		<td class="text-end">{ formatDuration(job.Duration) }</td>
+		<td class={ getStatusClass(job.Status) }>{ job.Status }</td>
+		<td>{ formatTime(job.NextRun) }</td>
+	</tr>
 }

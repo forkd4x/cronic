@@ -31,17 +31,25 @@ func Home(jobs []models.Job) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!doctype html><html><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>Cronic Scheduler</title><link href=\"/static/daisyui.v5.0.43.css\" rel=\"stylesheet\" type=\"text/css\"><script src=\"https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js\"></script><script src=\"https://cdn.jsdelivr.net/npm/htmx-ext-sse@2.2.2\"></script></head><body class=\"p-5\"><div class=\"grid grid-cols-1\"><h1 class=\"text-2xl font-bold p-4\">Cronic Scheduler</h1><ul class=\"list\" hx-ext=\"sse\" sse-connect=\"/sse?stream=updates\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!doctype html><html><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>Cronic Scheduler</title><link href=\"/static/bootstrap.v5.3.7.min.css\" rel=\"stylesheet\" type=\"text/css\"><script src=\"https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js\"></script><script src=\"https://cdn.jsdelivr.net/npm/htmx-ext-sse@2.2.2\"></script><link href=\"/static/cronic.css\" rel=\"stylesheet\" type=\"text/css\"><style>\n\t\t\t\t.table td { border-color: inherit; white-space: nowrap; }\n\t\t\t</style></head><body class=\"p-3\"><div class=\"container\"><div class=\"row\"><h4>Cronic Scheduler</h4><table class=\"table table-bordered border rounded\" hx-ext=\"sse\" sse-connect=\"/sse?stream=updates\"><thead><tr><th>Job</th><th>Schedule</th><th>Last Run</th><th>Duration</th><th>Status</th><th>Next Run</th></tr></thead> <tbody>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		for _, job := range jobs {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<tr>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
 			templ_7745c5c3_Err = Job(job).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</tr>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</ul></div><script src=\"/static/tailwindcss.v4.1.10.js\"></script></body></html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</tbody></table></div></div><script src=\"/static/bootstrap.v5.3.7.min.js\"></script></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

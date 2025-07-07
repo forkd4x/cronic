@@ -149,7 +149,12 @@ func (cronic *Cronic) LoadJobs() error {
 						now := time.Now()
 						job.Status = "Running"
 						job.LastRun = &now
-						job.NextRun = nil
+						nextRuns, err := scheduledJob.NextRuns(2)
+						if err != nil {
+							job.NextRun = nil
+						} else {
+							job.NextRun = &nextRuns[1]
+						}
 						models.DB.Save(&job)
 
 						var b bytes.Buffer
@@ -164,10 +169,8 @@ func (cronic *Cronic) LoadJobs() error {
 				),
 				gocron.AfterJobRuns(
 					func(jobID uuid.UUID, jobName string) {
-						if job.LastRun != nil {
-							duration := time.Since(*job.LastRun)
-							job.Duration = &duration
-						}
+						duration := time.Since(*job.LastRun)
+						job.Duration = &duration
 						if nextRun, err := scheduledJob.NextRun(); err == nil {
 							job.NextRun = &nextRun
 						}
