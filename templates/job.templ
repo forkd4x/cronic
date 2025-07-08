@@ -34,8 +34,7 @@ func formatDuration(d *time.Duration) string {
 	if d == nil {
 		return ""
 	}
-	return d.Round(time.Second/100).String()
-	//return time.Unix(0, 0).UTC().Add(*d).Format("15h:04m:05s")
+	return time.Unix(0, 0).UTC().Add(*d).Format("15:04:05")
 }
 
 templ Job(job models.Job) {
@@ -43,7 +42,7 @@ templ Job(job models.Job) {
 		<td>{ job.Name }</td>
 		<td>{ job.CronHuman() }</td>
 		<td>{ formatTime(job.LastRun) }</td>
-		<td class="text-end">{ formatDuration(job.Duration) }</td>
+		<td class="text-center">{ formatDuration(job.Duration) }</td>
 		<td class={ getStatusClass(job.Status) }>{ job.Status }</td>
 		<td>{ formatTime(job.NextRun) }</td>
 	</tr>

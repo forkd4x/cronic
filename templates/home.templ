@@ -17,10 +17,10 @@ templ Home(jobs []models.Job) {
 				.table td { border-color: inherit; white-space: nowrap; }
 			</style>
 		</head>
-		<body class="p-3">
+		<body class="font-monospace p-3">
 			<div class="container">
 				<div class="row">
-					<h4>Cronic Scheduler</h4>
+					<h5>Cronic Scheduler</h5>
 					<table class="table table-bordered border rounded" hx-ext="sse" sse-connect="/sse?stream=updates">
 						<thead>
 							<tr>
