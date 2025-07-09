@@ -1,0 +1,11 @@
+package templates
+
+import "github.com/forkd4x/cronic/models"
+
+templ Jobs(jobs []models.Job) {
+	<tbody sse-swap="jobs" hx-swap="outerHTML">
+		for _, job := range jobs {
+			@Job(job)
+		}
+	</tbody>
+}

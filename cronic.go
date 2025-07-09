@@ -157,12 +157,16 @@ func (cronic *Cronic) LoadJobs() error {
 						}
 						models.DB.Save(&job)
 
+						jobs, err := models.GetJobs()
+						if err != nil {
+							panic(err)
+						}
 						var b bytes.Buffer
-						if err := templates.Job(job).Render(context.Background(), &b); err != nil {
+						if err := templates.Jobs(jobs).Render(context.Background(), &b); err != nil {
 							return
 						}
 						cronic.Server.SSE.Publish("updates", &sse.Event{
-							Event: fmt.Append(nil, job.ID),
+							Event: fmt.Append(nil, "jobs"),
 							Data:  b.Bytes(),
 						})
 					},
@@ -176,12 +180,16 @@ func (cronic *Cronic) LoadJobs() error {
 						}
 						models.DB.Save(&job)
 
+						jobs, err := models.GetJobs()
+						if err != nil {
+							panic(err)
+						}
 						var b bytes.Buffer
-						if err := templates.Job(job).Render(context.Background(), &b); err != nil {
+						if err := templates.Jobs(jobs).Render(context.Background(), &b); err != nil {
 							return
 						}
 						cronic.Server.SSE.Publish("updates", &sse.Event{
-							Event: fmt.Append(nil, job.ID),
+							Event: fmt.Append(nil, "jobs"),
 							Data:  b.Bytes(),
 						})
 					},

@@ -43,13 +43,6 @@ func NewServer() Server {
 	s.AutoReplay = false
 	s.CreateStream("updates")
 
-	e.GET("/test", func(c echo.Context) error {
-		s.Publish("updates", &sse.Event{
-			Data: []byte("this is a test"),
-		})
-		return nil
-	})
-
 	e.GET("/sse", func(c echo.Context) error {
 		fmt.Println("SSE client connected")
 		go func() {
