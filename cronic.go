@@ -169,6 +169,24 @@ func (cronic *Cronic) LoadJobs() error {
 							Event: fmt.Append(nil, "jobs"),
 							Data:  b.Bytes(),
 						})
+
+						// Update duration of running tasks
+						go func() {
+							for {
+								time.Sleep(time.Second)
+								var b bytes.Buffer
+								if err := templates.Job(job).Render(context.Background(), &b); err != nil {
+									return
+								}
+								cronic.Server.SSE.Publish("updates", &sse.Event{
+									Event: fmt.Append(nil, job.ID),
+									Data:  b.Bytes(),
+								})
+								if job.Status != "Running" {
+									break
+								}
+							}
+						}()
 					},
 				),
 				gocron.AfterJobRuns(
