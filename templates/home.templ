@@ -15,6 +15,10 @@ templ Home(jobs []models.Job) {
 			<link href="/static/cronic.css" rel="stylesheet" type="text/css"/>
 			<style>
 				.table td { border-color: inherit; white-space: nowrap; }
+				::view-transition-old(*),
+				::view-transition-new(*) {
+					animation-duration: 1000ms;
+				}
 			</style>
 		</head>
 		<body class="font-monospace p-3">

@@ -3,7 +3,7 @@ package templates
 import "github.com/forkd4x/cronic/models"
 
 templ Jobs(jobs []models.Job) {
-	<tbody sse-swap="jobs" hx-swap="outerHTML">
+	<tbody sse-swap="jobs" hx-swap="outerHTML transition:true">
 		for _, job := range jobs {
 			@Job(job)
 		}
