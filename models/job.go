@@ -83,7 +83,7 @@ func (job Job) CronHuman() string {
 func GetJobs() ([]Job, error) {
 	var jobs []Job
 	orderBy := `
-		case when status='Running' then 0 else 1 end,
+		case when status='Running' then last_run else null end desc,
 		ifnull(next_run, '2099-01-01')
 	`
 	result := DB.Order(orderBy).Find(&jobs)
