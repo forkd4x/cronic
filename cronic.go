@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/forkd4x/cronic/models"
@@ -23,6 +24,8 @@ type Cronic struct {
 	Context   context.Context
 	Scheduler gocron.Scheduler
 	Server    Server
+	mu        sync.Mutex
+	debounce  sync.Map
 }
 
 func NewCronic(root string) (*Cronic, error) {
@@ -146,6 +149,8 @@ func (cronic *Cronic) LoadJobs() error {
 			gocron.WithEventListeners(
 				gocron.BeforeJobRuns(
 					func(jobID uuid.UUID, jobName string) {
+						cronic.mu.Lock()
+						defer cronic.mu.Unlock()
 						now := time.Now()
 						job.Status = "Running"
 						job.LastRun = &now
@@ -165,7 +170,7 @@ func (cronic *Cronic) LoadJobs() error {
 						if err := templates.Jobs(jobs).Render(context.Background(), &b); err != nil {
 							return
 						}
-						cronic.Server.SSE.Publish("updates", &sse.Event{
+						cronic.Publish(&sse.Event{
 							Event: fmt.Append(nil, "jobs"),
 							Data:  b.Bytes(),
 						})
@@ -178,7 +183,7 @@ func (cronic *Cronic) LoadJobs() error {
 								if err := templates.Job(job).Render(context.Background(), &b); err != nil {
 									return
 								}
-								cronic.Server.SSE.Publish("updates", &sse.Event{
+								cronic.Publish(&sse.Event{
 									Event: fmt.Append(nil, job.ID),
 									Data:  b.Bytes(),
 								})
@@ -192,6 +197,8 @@ func (cronic *Cronic) LoadJobs() error {
 				gocron.AfterJobRuns(
 					func(jobID uuid.UUID, jobName string) {
 						duration := time.Since(*job.LastRun)
+						cronic.mu.Lock()
+						defer cronic.mu.Unlock()
 						job.Duration = &duration
 						if nextRun, err := scheduledJob.NextRun(); err == nil {
 							job.NextRun = &nextRun
@@ -206,7 +213,7 @@ func (cronic *Cronic) LoadJobs() error {
 						if err := templates.Jobs(jobs).Render(context.Background(), &b); err != nil {
 							return
 						}
-						cronic.Server.SSE.Publish("updates", &sse.Event{
+						cronic.Publish(&sse.Event{
 							Event: fmt.Append(nil, "jobs"),
 							Data:  b.Bytes(),
 						})
@@ -219,4 +226,14 @@ func (cronic *Cronic) LoadJobs() error {
 		}
 	}
 	return nil
+}
+
+func (cronic *Cronic) Publish(event *sse.Event) {
+	key := string(event.Event)
+	if timer, ok := cronic.debounce.Load(key); ok {
+		timer.(*time.Timer).Stop()
+	}
+	cronic.debounce.Store(key, time.AfterFunc(50*time.Millisecond, func() {
+		cronic.Server.SSE.Publish("updates", event)
+	}))
 }
