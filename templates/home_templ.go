@@ -31,7 +31,7 @@ func Home(jobs []models.Job) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!doctype html><html><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>Cronic Scheduler</title><link href=\"/static/bootstrap.v5.3.7.min.css\" rel=\"stylesheet\" type=\"text/css\"><script src=\"https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js\"></script><script src=\"https://cdn.jsdelivr.net/npm/htmx-ext-sse@2.2.2\"></script><link href=\"/static/cronic.css\" rel=\"stylesheet\" type=\"text/css\"><style>\n\t\t\t\t.table td { border-color: inherit; white-space: nowrap; }\n\t\t\t\t::view-transition-old(*),\n\t\t\t\t::view-transition-new(*) {\n\t\t\t\t\tanimation-duration: 1000ms;\n\t\t\t\t}\n\t\t\t</style></head><body class=\"font-monospace p-3\"><div class=\"container\"><div class=\"row\"><h5>Cronic Scheduler</h5><table class=\"table table-bordered border rounded\" hx-ext=\"sse\" sse-connect=\"/sse?stream=updates\"><thead><tr><th>Job</th><th>Schedule</th><th>Last Run</th><th>Duration</th><th>Status</th><th>Next Run</th></tr></thead>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!doctype html><html><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>Cronic Scheduler</title><link href=\"/static/bootstrap.v5.3.7.min.css\" rel=\"stylesheet\" type=\"text/css\"><script src=\"https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js\"></script><script src=\"https://cdn.jsdelivr.net/npm/htmx-ext-sse@2.2.2\"></script><link href=\"/static/cronic.css\" rel=\"stylesheet\" type=\"text/css\"><style>\n\t\t\t\t.table td { border-color: inherit; white-space: nowrap; }\n\t\t\t\t::view-transition-old(*),\n\t\t\t\t::view-transition-new(*) {\n\t\t\t\t\tanimation-duration: 1000ms;\n\t\t\t\t}\n\t\t\t</style></head><body class=\"font-monospace p-3\" hx-ext=\"sse\" sse-connect=\"/sse?stream=updates\"><div class=\"container\"><div class=\"row\"><h5>Cronic Scheduler</h5>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -39,7 +39,7 @@ func Home(jobs []models.Job) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</table></div></div><script src=\"/static/bootstrap.v5.3.7.min.js\"></script></body></html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div></div><script src=\"/static/bootstrap.v5.3.7.min.js\"></script></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

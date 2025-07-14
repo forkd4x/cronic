@@ -171,7 +171,7 @@ func (cronic *Cronic) LoadJobs() error {
 							return
 						}
 						cronic.Publish(&sse.Event{
-							Event: fmt.Append(nil, "jobs"),
+							Event: fmt.Append(nil, "table"),
 							Data:  b.Bytes(),
 						})
 
@@ -214,7 +214,7 @@ func (cronic *Cronic) LoadJobs() error {
 							return
 						}
 						cronic.Publish(&sse.Event{
-							Event: fmt.Append(nil, "jobs"),
+							Event: fmt.Append(nil, "table"),
 							Data:  b.Bytes(),
 						})
 					},

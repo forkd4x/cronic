@@ -3,9 +3,32 @@ package templates
 import "github.com/forkd4x/cronic/models"
 
 templ Jobs(jobs []models.Job) {
-	<tbody sse-swap="jobs" hx-swap="outerHTML transition:true">
-		for _, job := range jobs {
-			@Job(job)
-		}
-	</tbody>
+	{{ divider := "" }}
+	<table class="table table-bordered border rounded" sse-swap="table" hx-swap="outerHTML transition:true">
+		<thead>
+			<tr>
+				<th>Job</th>
+				<th>Schedule</th>
+				<th>Last Run</th>
+				<th>Duration</th>
+				<th>Status</th>
+				<th>Next Run</th>
+			</tr>
+		</thead>
+		<tbody>
+			for _, job := range jobs {
+				if job.Status == "Running" {
+					@Job(job)
+					{{ divider = "table-group-divider" }}
+				}
+			}
+		</tbody>
+		<tbody class={ divider }>
+			for _, job := range jobs {
+				if job.Status != "Running" {
+					@Job(job)
+				}
+			}
+		</tbody>
+	</table>
 }

@@ -21,23 +21,11 @@ templ Home(jobs []models.Job) {
 				}
 			</style>
 		</head>
-		<body class="font-monospace p-3">
+		<body class="font-monospace p-3" hx-ext="sse" sse-connect="/sse?stream=updates">
 			<div class="container">
 				<div class="row">
 					<h5>Cronic Scheduler</h5>
-					<table class="table table-bordered border rounded" hx-ext="sse" sse-connect="/sse?stream=updates">
-						<thead>
-							<tr>
-								<th>Job</th>
-								<th>Schedule</th>
-								<th>Last Run</th>
-								<th>Duration</th>
-								<th>Status</th>
-								<th>Next Run</th>
-							</tr>
-						</thead>
-						@Jobs(jobs)
-					</table>
+					@Jobs(jobs)
 				</div>
 			</div>
 			<script src="/static/bootstrap.v5.3.7.min.js"></script>
