@@ -1,0 +1,30 @@
+{{ define "jobs.html" }}
+{{ $divider := "" }}
+<table class="table table-bordered border rounded" sse-swap="table" hx-swap="outerHTML transition:true">
+	<thead>
+		<tr>
+			<th>Job</th>
+			<th>Schedule</th>
+			<th>Last Run</th>
+			<th>Duration</th>
+			<th>Status</th>
+			<th>Next Run</th>
+		</tr>
+	</thead>
+	<tbody>
+		{{ range . }}
+			{{ if eq .Status "Running" }}
+				{{ template "job.html" . }}
+				{{ $divider = "table-group-divider" }}
+			{{ end }}
+		{{ end }}
+	</tbody>
+	<tbody class="{{ $divider }}">
+		{{ range . }}
+			{{ if ne .Status "Running" }}
+				{{ template "job.html" . }}
+			{{ end }}
+		{{ end }}
+	</tbody>
+</table>
+{{ end }}

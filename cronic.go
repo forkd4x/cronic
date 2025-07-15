@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/forkd4x/cronic/models"
-	"github.com/forkd4x/cronic/templates"
 	"github.com/go-co-op/gocron/v2"
 	"github.com/goforj/godump"
 	"github.com/google/uuid"
@@ -134,6 +133,8 @@ func (cronic *Cronic) LoadJobs() error {
 			}
 		}
 
+		// TODO: Mark unfound jobs as deleted
+
 		var scheduledJob gocron.Job
 		scheduledJob, err = cronic.Scheduler.NewJob(
 			gocron.CronJob(job.Cron, true),
@@ -166,26 +167,32 @@ func (cronic *Cronic) LoadJobs() error {
 						if err != nil {
 							panic(err)
 						}
-						var b bytes.Buffer
-						if err := templates.Jobs(jobs).Render(context.Background(), &b); err != nil {
-							return
+						html, err := cronic.Server.RenderTemplate("jobs.html", jobs)
+						if err != nil {
+							panic(err)
 						}
+						// fmt.Println("```")
+						// fmt.Println(string(html))
+						// fmt.Println("```")
 						cronic.Publish(&sse.Event{
 							Event: fmt.Append(nil, "table"),
-							Data:  b.Bytes(),
+							Data:  html,
 						})
 
 						// Update duration of running tasks
 						go func() {
 							for {
 								time.Sleep(time.Second)
-								var b bytes.Buffer
-								if err := templates.Job(job).Render(context.Background(), &b); err != nil {
-									return
+								html, err := cronic.Server.RenderTemplate("job.html", job)
+								if err != nil {
+									panic(err)
 								}
+								// fmt.Println("```")
+								// fmt.Println(string(html))
+								// fmt.Println("```")
 								cronic.Publish(&sse.Event{
 									Event: fmt.Append(nil, job.ID),
-									Data:  b.Bytes(),
+									Data:  html,
 								})
 								if job.Status != "Running" {
 									break
@@ -209,13 +216,16 @@ func (cronic *Cronic) LoadJobs() error {
 						if err != nil {
 							panic(err)
 						}
-						var b bytes.Buffer
-						if err := templates.Jobs(jobs).Render(context.Background(), &b); err != nil {
-							return
+						html, err := cronic.Server.RenderTemplate("jobs.html", jobs)
+						if err != nil {
+							panic(err)
 						}
+						// fmt.Println("```")
+						// fmt.Println(string(html))
+						// fmt.Println("```")
 						cronic.Publish(&sse.Event{
 							Event: fmt.Append(nil, "table"),
-							Data:  b.Bytes(),
+							Data:  html,
 						})
 					},
 				),
@@ -233,6 +243,16 @@ func (cronic *Cronic) Publish(event *sse.Event) {
 	if timer, ok := cronic.debounce.Load(key); ok {
 		timer.(*time.Timer).Stop()
 	}
+	// Remove all newline and carriage return characters to avoid multi-line SSE data issues,
+	// then trim surrounding spaces so HTMX SSE swap matches correctly.
+	event.Data = bytes.Map(func(r rune) rune {
+		if r == '\n' || r == '\r' {
+			return -1
+		}
+		return r
+	}, event.Data)
+	event.Data = bytes.TrimSpace(event.Data)
+
 	cronic.debounce.Store(key, time.AfterFunc(50*time.Millisecond, func() {
 		cronic.Server.SSE.Publish("updates", event)
 	}))

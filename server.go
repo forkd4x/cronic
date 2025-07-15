@@ -1,24 +1,88 @@
 package main
 
 import (
+	"bytes"
 	"embed"
 	"fmt"
+	"html/template"
+	"io"
 	"io/fs"
 	"net/http"
+	"time"
 
-	"github.com/a-h/templ"
 	"github.com/forkd4x/cronic/models"
-	"github.com/forkd4x/cronic/templates"
 	"github.com/labstack/echo/v4"
 	"github.com/r3labs/sse/v2"
 )
 
-//go:embed static/*
+	//go:embed static/*
 var staticFiles embed.FS
 
+//go:embed templates/*.html
+var templateFiles embed.FS
+
 type Server struct {
-	Echo *echo.Echo
-	SSE  *sse.Server
+	Echo      *echo.Echo
+	SSE       *sse.Server
+	Templates *template.Template
+}
+
+type TemplateRenderer struct {
+	Templates *template.Template
+}
+
+func (t *TemplateRenderer) Render(w io.Writer, name string, data any, c echo.Context) error {
+	return t.Templates.ExecuteTemplate(w, name, data)
+}
+
+func getStatusClass(status string) string {
+	switch status {
+	case "Pending":
+		return "bg-light text-secondary"
+	case "Running":
+		return "text-primary"
+	case "Success":
+		return "bg-success bg-opacity-10 text-success"
+	case "Warning":
+		return "bg-warning bg-opacity-10 text-warning"
+	case "Error":
+		return "bg-danger bg-opacity-10 text-danger"
+	default:
+		return ""
+	}
+}
+
+func formatTime(t *time.Time) string {
+	if t == nil {
+		return ""
+	}
+	return t.Format("01/02/2006 15:04:05")
+}
+
+func formatDuration(job models.Job) string {
+	if job.Status == "Running" && job.LastRun != nil {
+		duration := time.Since(*job.LastRun)
+		job.Duration = &duration
+	}
+	if job.Duration == nil {
+		return ""
+	}
+	return time.Unix(0, 0).UTC().Add(*job.Duration).Format("15:04:05")
+}
+
+func hasRunning(jobs []models.Job) bool {
+	for _, j := range jobs {
+		if j.Status == "Running" {
+			return true
+		}
+	}
+	return false
+}
+
+func (s Server) RenderTemplate(name string, data any) ([]byte, error) {
+	var b bytes.Buffer
+	err := s.Templates.ExecuteTemplate(&b, name, data)
+	return b.Bytes(), err
 }
 
 func NewServer() Server {
@@ -31,12 +95,23 @@ func NewServer() Server {
 	}
 	e.GET("/static/*", echo.WrapHandler(http.StripPrefix("/static/", http.FileServer(http.FS(staticFS)))))
 
+	tmpl := template.Must(template.New("").
+		Funcs(template.FuncMap{
+			"getStatusClass": getStatusClass,
+			"formatTime":     formatTime,
+			"formatDuration": formatDuration,
+			"hasRunning":     hasRunning,
+		}).
+		ParseFS(templateFiles, "templates/*.html"),
+	)
+	e.Renderer = &TemplateRenderer{Templates: tmpl}
+
 	e.GET("/", func(c echo.Context) error {
 		jobs, err := models.GetJobs()
 		if err != nil {
 			return echo.NewHTTPError(http.StatusInternalServerError)
 		}
-		return Render(c, http.StatusOK, templates.Home(jobs))
+		return c.Render(http.StatusOK, "home.html", map[string]any{"Jobs": jobs})
 	})
 
 	s := sse.New()
@@ -54,20 +129,8 @@ func NewServer() Server {
 	})
 
 	return Server{
-		Echo: e,
-		SSE:  s,
+		Echo:      e,
+		SSE:       s,
+		Templates: tmpl,
 	}
-}
-
-// This custom Render replaces Echo's echo.Context.Render() with templ's
-// templ.Component.Render().
-func Render(ctx echo.Context, statusCode int, t templ.Component) error {
-	buf := templ.GetBuffer()
-	defer templ.ReleaseBuffer(buf)
-
-	if err := t.Render(ctx.Request().Context(), buf); err != nil {
-		return err
-	}
-
-	return ctx.HTML(statusCode, buf.String())
 }

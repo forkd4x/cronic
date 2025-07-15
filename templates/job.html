@@ -1,0 +1,10 @@
+{{ define "job.html" }}
+<tr sse-swap="{{ .ID }}" hx-swap="outerHTML">
+	<td>{{ .Name }}</td>
+	<td>{{ .CronHuman }}</td>
+	<td>{{ formatTime .LastRun }}</td>
+	<td class="text-center">{{ formatDuration . }}</td>
+	<td class="{{ getStatusClass .Status }}">{{ .Status }}</td>
+	<td>{{ formatTime .NextRun }}</td>
+</tr>
+{{ end }}

@@ -1,0 +1,30 @@
+{{ define "home.html" }}
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		<title>Cronic Scheduler</title>
+		<link href="/static/bootstrap.v5.3.7.min.css" rel="stylesheet" type="text/css"/>
+		<script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/htmx-ext-sse@2.2.2"></script>
+		<link href="/static/cronic.css" rel="stylesheet" type="text/css"/>
+		<style>
+			.table td { border-color: inherit; white-space: nowrap; }
+			::view-transition-old(*),
+			::view-transition-new(*) {
+				animation-duration: 1000ms;
+			}
+		</style>
+	</head>
+	<body class="font-monospace p-3" hx-ext="sse" sse-connect="/sse?stream=updates">
+		<div class="container">
+			<div class="row">
+				<h5>Cronic Scheduler</h5>
+				{{ template "jobs.html" .Jobs }}
+			</div>
+		</div>
+		<script src="/static/bootstrap.v5.3.7.min.js"></script>
+	</body>
+</html>
+{{ end }}
