@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"fmt"
 	"os/exec"
+	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -24,7 +26,13 @@ func (job *Job) Run() error {
 	if err := DB.Create(&run).Error; err != nil {
 		return fmt.Errorf("failed to insert Run: %w", err)
 	}
-	cmd := exec.Command("sh", "-c", "./"+job.File)
+	var cmd *exec.Cmd
+	if filepath.Ext(job.File) == ".Dockerfile" {
+		tag := strings.TrimSuffix(filepath.Base(job.File), filepath.Ext(job.File))
+		cmd = exec.Command("sh", "-c", "docker build -f "+job.File+" -t "+tag+" . && docker run "+tag)
+	} else {
+		cmd = exec.Command("sh", "-c", "./"+job.File)
+	}
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		panic(err)
