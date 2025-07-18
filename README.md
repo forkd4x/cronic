@@ -3,9 +3,15 @@
 ```sh
 go run . examples/
 ```
-
-### Live reload setup
-~/go/bin/air init
+Open http://localhost:1323
 
 ### Live reload
-~/go/bin/air examples/
+```sh
+go install github.com/air-verse/air@latest
+
+air \
+    --tmp_dir "/tmp" \
+    --build.bin "/tmp/cronic.air" \
+    --build.cmd "go build -o /tmp/cronic.air" \
+    examples/
+```
