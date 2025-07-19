@@ -5,78 +5,21 @@ import (
 	"embed"
 	"fmt"
 	"html/template"
-	"io"
 	"io/fs"
 	"net/http"
-	"time"
 
 	"github.com/forkd4x/cronic/models"
 	"github.com/labstack/echo/v4"
 	"github.com/r3labs/sse/v2"
 )
 
-	//go:embed static/*
+//go:embed static/*
 var staticFiles embed.FS
-
-//go:embed templates/*.html
-var templateFiles embed.FS
 
 type Server struct {
 	Echo      *echo.Echo
 	SSE       *sse.Server
 	Templates *template.Template
-}
-
-type TemplateRenderer struct {
-	Templates *template.Template
-}
-
-func (t *TemplateRenderer) Render(w io.Writer, name string, data any, c echo.Context) error {
-	return t.Templates.ExecuteTemplate(w, name, data)
-}
-
-func getStatusClass(status string) string {
-	switch status {
-	case "Pending":
-		return "bg-light text-secondary"
-	case "Running":
-		return "text-primary"
-	case "Success":
-		return "bg-success bg-opacity-10 text-success"
-	case "Warning":
-		return "bg-warning bg-opacity-10 text-warning"
-	case "Error":
-		return "bg-danger bg-opacity-10 text-danger"
-	default:
-		return ""
-	}
-}
-
-func formatTime(t *time.Time) string {
-	if t == nil {
-		return ""
-	}
-	return t.Format("01/02/2006 15:04:05")
-}
-
-func formatDuration(job models.Job) string {
-	if job.Status == "Running" && job.LastRun != nil {
-		duration := time.Since(*job.LastRun)
-		job.Duration = &duration
-	}
-	if job.Duration == nil {
-		return ""
-	}
-	return time.Unix(0, 0).UTC().Add(*job.Duration).Format("15:04:05")
-}
-
-func hasRunning(jobs []models.Job) bool {
-	for _, j := range jobs {
-		if j.Status == "Running" {
-			return true
-		}
-	}
-	return false
 }
 
 func (s Server) RenderTemplate(name string, data any) ([]byte, error) {
@@ -93,18 +36,10 @@ func NewServer() Server {
 	if err != nil {
 		panic(err)
 	}
-	e.GET("/static/*", echo.WrapHandler(http.StripPrefix("/static/", http.FileServer(http.FS(staticFS)))))
+	staticHandler := http.FileServer(http.FS(staticFS))
+	e.GET("/static/*", echo.WrapHandler(http.StripPrefix("/static/", staticHandler)))
 
-	tmpl := template.Must(template.New("").
-		Funcs(template.FuncMap{
-			"getStatusClass": getStatusClass,
-			"formatTime":     formatTime,
-			"formatDuration": formatDuration,
-			"hasRunning":     hasRunning,
-		}).
-		ParseFS(templateFiles, "templates/*.html"),
-	)
-	e.Renderer = &TemplateRenderer{Templates: tmpl}
+	e.Renderer = TemplateRenderer()
 
 	e.GET("/", func(c echo.Context) error {
 		jobs, err := models.GetJobs()
@@ -117,7 +52,6 @@ func NewServer() Server {
 	s := sse.New()
 	s.AutoReplay = false
 	s.CreateStream("updates")
-
 	e.GET("/sse", func(c echo.Context) error {
 		fmt.Println("SSE client connected")
 		go func() {
@@ -131,6 +65,6 @@ func NewServer() Server {
 	return Server{
 		Echo:      e,
 		SSE:       s,
-		Templates: tmpl,
+		Templates: e.Renderer.(*Template).Templates,
 	}
 }
