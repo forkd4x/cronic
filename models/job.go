@@ -59,7 +59,6 @@ func (job *Job) ParseFile() error {
 		yamlLines = append(yamlLines, key+": "+value)
 	}
 	yamlData := strings.Join(yamlLines, "\n")
-	fmt.Println(yamlData)
 
 	err = yaml.Unmarshal([]byte(yamlData), job)
 	if err != nil {
