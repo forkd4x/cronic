@@ -4,7 +4,7 @@
 go test ./... -v
 go run . examples/
 ```
-Open http://localhost:1323
+Open <http://localhost:1323>
 
 ### Live reload
 ```sh

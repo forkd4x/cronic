@@ -14,7 +14,6 @@ import (
 
 	"github.com/forkd4x/cronic/models"
 	"github.com/go-co-op/gocron/v2"
-	"github.com/goforj/godump"
 	"github.com/google/uuid"
 	"github.com/r3labs/sse/v2"
 )
@@ -98,7 +97,6 @@ func (cronic *Cronic) LoadJobs() error {
 			continue
 		}
 		fmt.Println("Found cronic yaml in", job.File)
-		godump.Dump(job)
 
 		var dbJob models.Job
 		where := "file = ? AND name = ?"

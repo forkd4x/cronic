@@ -18,6 +18,7 @@ type Job struct {
 	Name      string
 	Desc      string
 	Cron      string
+	Cmd       string
 	Status    string
 	LastRun   *time.Time
 	Duration  *time.Duration
@@ -40,7 +41,7 @@ func (job *Job) ParseFile() error {
 		return fmt.Errorf("failed to read file %s: %w", job.File, err)
 	}
 
-	re := regexp.MustCompile(`(?m)^\W+(?:\s(cronic)|\s\s+(\w+)):\s*([^:\n$]*)\n`)
+	re := regexp.MustCompile(`(?m)^\W+(?:\s(cronic)|\s\s+(\w+)):\s*([^:\n]*)\n`)
 	matches := re.FindAllStringSubmatch(string(buffer), -1)
 	if matches == nil || matches[0][1] != "cronic" {
 		return nil
@@ -63,6 +64,9 @@ func (job *Job) ParseFile() error {
 	err = yaml.Unmarshal([]byte(yamlData), job)
 	if err != nil {
 		return fmt.Errorf("failed to parse YAML %s: %w", yamlData, err)
+	}
+	if job.Cmd == "" {
+		job.Cmd = "./" + job.File
 	}
 	return nil
 }
