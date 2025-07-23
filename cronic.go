@@ -165,13 +165,13 @@ func (cronic *Cronic) LoadJobs() error {
 						if err != nil {
 							panic(err)
 						}
-						html, err := cronic.Server.RenderTemplate("jobs.html", jobs)
+						html, err := cronic.Server.RenderTemplate("jobs.html", map[string]any{
+							"Time": &now,
+							"Jobs": jobs,
+						})
 						if err != nil {
 							panic(err)
 						}
-						// fmt.Println("```")
-						// fmt.Println(string(html))
-						// fmt.Println("```")
 						cronic.Publish(&sse.Event{
 							Event: fmt.Append(nil, "table"),
 							Data:  html,
@@ -185,9 +185,6 @@ func (cronic *Cronic) LoadJobs() error {
 								if err != nil {
 									panic(err)
 								}
-								// fmt.Println("```")
-								// fmt.Println(string(html))
-								// fmt.Println("```")
 								cronic.Publish(&sse.Event{
 									Event: fmt.Append(nil, job.ID),
 									Data:  html,
@@ -210,19 +207,20 @@ func (cronic *Cronic) LoadJobs() error {
 						}
 						models.DB.Save(&job)
 
+						now := time.Now()
 						jobs, err := models.GetJobs()
 						if err != nil {
 							panic(err)
 						}
-						html, err := cronic.Server.RenderTemplate("jobs.html", jobs)
+						html, err := cronic.Server.RenderTemplate("jobs.html", map[string]any{
+							"Time": &now,
+							"Jobs": jobs,
+						})
 						if err != nil {
 							panic(err)
 						}
-						// fmt.Println("```")
-						// fmt.Println(string(html))
-						// fmt.Println("```")
 						cronic.Publish(&sse.Event{
-							Event: fmt.Append(nil, "table"),
+							Event: []byte("table"),
 							Data:  html,
 						})
 					},

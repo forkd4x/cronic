@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"io/fs"
 	"net/http"
+	"time"
 
 	"github.com/forkd4x/cronic/models"
 	"github.com/labstack/echo/v4"
@@ -46,7 +47,11 @@ func NewServer() Server {
 		if err != nil {
 			return echo.NewHTTPError(http.StatusInternalServerError)
 		}
-		return c.Render(http.StatusOK, "home.html", map[string]any{"Jobs": jobs})
+		now := time.Now()
+		return c.Render(http.StatusOK, "home.html", map[string]any{
+			"Time": &now,
+			"Jobs": jobs,
+		})
 	})
 
 	s := sse.New()
@@ -57,6 +62,16 @@ func NewServer() Server {
 		go func() {
 			<-c.Request().Context().Done()
 			fmt.Println("SSE client disconnected")
+		}()
+		go func() {
+			for {
+				time.Sleep(time.Second)
+				s.Publish("updates", &sse.Event{
+					Event: []byte("time"),
+					Data:  []byte(time.Now().Format("15:04:05")),
+				})
+			}
+
 		}()
 		s.ServeHTTP(c.Response(), c.Request())
 		return nil

@@ -28,6 +28,7 @@ func TemplateRenderer() *Template {
 				New("").
 				Funcs(template.FuncMap{
 					"getStatusClass": getStatusClass,
+					"formatDate":     formatDate,
 					"formatTime":     formatTime,
 					"formatDuration": formatDuration,
 					"hasRunning":     hasRunning,
@@ -54,11 +55,18 @@ func getStatusClass(status string) string {
 	}
 }
 
+func formatDate(t *time.Time) string {
+	if t == nil {
+		return ""
+	}
+	return t.Format("01/02/2006")
+}
+
 func formatTime(t *time.Time) string {
 	if t == nil {
 		return ""
 	}
-	return t.Format("01/02/2006 15:04:05")
+	return t.Format("15:04:05")
 }
 
 func formatDuration(job models.Job) string {

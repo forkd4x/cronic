@@ -8,11 +8,14 @@
 			<th>Last Run</th>
 			<th>Duration</th>
 			<th>Status</th>
-			<th>Next Run</th>
+			<th>
+				Next Run
+				<span class="float-end" sse-swap="time" hx-swap="innerHTML">{{ formatTime .Time }}</span>
+			</th>
 		</tr>
 	</thead>
 	<tbody>
-		{{ range . }}
+		{{ range .Jobs }}
 			{{ if eq .Status "Running" }}
 				{{ template "job.html" . }}
 				{{ $divider = "table-group-divider" }}
@@ -20,7 +23,7 @@
 		{{ end }}
 	</tbody>
 	<tbody class="{{ $divider }}">
-		{{ range . }}
+		{{ range .Jobs }}
 			{{ if ne .Status "Running" }}
 				{{ template "job.html" . }}
 			{{ end }}
