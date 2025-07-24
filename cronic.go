@@ -50,7 +50,6 @@ func NewCronic(root string) (*Cronic, error) {
 }
 
 func (cronic *Cronic) Start() {
-	cronic.Scheduler.Start()
 	go func() {
 		err := cronic.Server.Echo.Start(":1323")
 		if err != nil && err != http.ErrServerClosed {
@@ -73,6 +72,7 @@ func (cronic *Cronic) Shutdown() error {
 }
 
 func (cronic *Cronic) LoadJobs() error {
+	cronic.Scheduler.Start()
 	dirEntries, err := os.ReadDir(".")
 	if err != nil {
 		cwd, err := os.Getwd()
@@ -98,6 +98,7 @@ func (cronic *Cronic) LoadJobs() error {
 		}
 		fmt.Println("Found cronic yaml in", job.File)
 
+		// TODO: Handle finding soft-deleted jobs and undelete them
 		var dbJob models.Job
 		where := "file = ? AND name = ?"
 		result := models.DB.
@@ -124,7 +125,9 @@ func (cronic *Cronic) LoadJobs() error {
 			job.CreatedAt = dbJob.CreatedAt
 			job.LastRun = dbJob.LastRun
 			job.Duration = dbJob.Duration
-			job.NextRun = dbJob.NextRun
+			if dbJob.NextRun != nil && dbJob.NextRun.Before(time.Now()) {
+				job.Status = "Missed"
+			}
 			result := models.DB.Save(&job)
 			if result.Error != nil {
 				return fmt.Errorf("failed updating job: %w", result.Error)
@@ -153,12 +156,8 @@ func (cronic *Cronic) LoadJobs() error {
 						now := time.Now()
 						job.Status = "Running"
 						job.LastRun = &now
-						nextRuns, err := scheduledJob.NextRuns(2)
-						if err != nil {
-							job.NextRun = nil
-						} else {
-							job.NextRun = &nextRuns[1]
-						}
+						nextRuns, _ := scheduledJob.NextRuns(2)
+						job.NextRun = &nextRuns[1]
 						models.DB.Save(&job)
 
 						jobs, err := models.GetJobs()
@@ -202,9 +201,8 @@ func (cronic *Cronic) LoadJobs() error {
 						cronic.mu.Lock()
 						defer cronic.mu.Unlock()
 						job.Duration = &duration
-						if nextRun, err := scheduledJob.NextRun(); err == nil {
-							job.NextRun = &nextRun
-						}
+						nextRun, _ := scheduledJob.NextRun()
+						job.NextRun = &nextRun
 						models.DB.Save(&job)
 
 						now := time.Now()
@@ -230,6 +228,9 @@ func (cronic *Cronic) LoadJobs() error {
 		if err != nil {
 			panic(err)
 		}
+		nextRun, _ := scheduledJob.NextRun()
+		job.NextRun = &nextRun
+		models.DB.Save(&job)
 	}
 	return nil
 }

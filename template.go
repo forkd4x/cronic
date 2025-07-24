@@ -48,7 +48,7 @@ func getStatusClass(status string) string {
 		return "bg-success bg-opacity-10 text-success"
 	case "Warning":
 		return "bg-warning bg-opacity-10 text-warning"
-	case "Error":
+	case "Error", "Missed":
 		return "bg-danger bg-opacity-10 text-danger"
 	default:
 		return ""
