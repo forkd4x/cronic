@@ -8,24 +8,26 @@ import (
 	"time"
 
 	"github.com/goccy/go-yaml"
+	"github.com/google/uuid"
 	"github.com/lnquy/cron"
 	"gorm.io/gorm"
 )
 
 type Job struct {
-	ID        uint `gorm:"primaryKey"`
-	File      string
-	Name      string
-	Desc      string
-	Cron      string
-	Cmd       string
-	Status    string
-	LastRun   *time.Time
-	Duration  *time.Duration
-	NextRun   *time.Time
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt gorm.DeletedAt
+	ID          uint `gorm:"primaryKey"`
+	File        string
+	Name        string
+	Desc        string
+	Cron        string
+	Cmd         string
+	Status      string
+	SchedulerID uuid.UUID
+	LastRun     *time.Time
+	Duration    *time.Duration
+	NextRun     *time.Time
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+	DeletedAt   gorm.DeletedAt
 }
 
 func (job *Job) ParseFile() error {

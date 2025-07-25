@@ -73,6 +73,7 @@ func (cronic *Cronic) Shutdown() error {
 
 func (cronic *Cronic) LoadJobs() error {
 	cronic.Scheduler.Start()
+	models.DB.Exec("update jobs set scheduler_id = null")
 	dirEntries, err := os.ReadDir(".")
 	if err != nil {
 		cwd, err := os.Getwd()
@@ -98,7 +99,6 @@ func (cronic *Cronic) LoadJobs() error {
 		}
 		fmt.Println("Found cronic yaml in", job.File)
 
-		// TODO: Handle finding soft-deleted jobs and undelete them
 		var dbJob models.Job
 		where := "file = ? AND name = ?"
 		result := models.DB.
@@ -108,6 +108,15 @@ func (cronic *Cronic) LoadJobs() error {
 			Find(&dbJob)
 		if result.RowsAffected == 0 {
 			result = models.DB.
+				Where(strings.Replace(where, " AND ", " OR ", 1), job.File, job.Name).
+				Order("updated_at desc").
+				Limit(1).
+				Find(&dbJob)
+		}
+		if result.RowsAffected == 0 {
+			// Include soft-deleted jobs
+			result = models.DB.
+				Unscoped().
 				Where(strings.Replace(where, " AND ", " OR ", 1), job.File, job.Name).
 				Order("updated_at desc").
 				Limit(1).
@@ -133,8 +142,6 @@ func (cronic *Cronic) LoadJobs() error {
 				return fmt.Errorf("failed updating job: %w", result.Error)
 			}
 		}
-
-		// TODO: Mark unfound jobs as deleted
 
 		var scheduledJob gocron.Job
 		scheduledJob, err = cronic.Scheduler.NewJob(
@@ -228,9 +235,17 @@ func (cronic *Cronic) LoadJobs() error {
 		if err != nil {
 			panic(err)
 		}
+		job.SchedulerID = scheduledJob.ID()
 		nextRun, _ := scheduledJob.NextRun()
 		job.NextRun = &nextRun
 		models.DB.Save(&job)
+	}
+	// Mark unfound jobs as deleted
+	var jobs []models.Job
+	models.DB.Where("scheduler_id is null").Find(&jobs)
+	for _, job := range jobs {
+		fmt.Println("Marking", job.Name, "as deleted")
+		models.DB.Delete(&job)
 	}
 	return nil
 }
