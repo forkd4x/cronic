@@ -6,8 +6,9 @@
 
 import sys
 import time
+from pathlib import Path
 
-print(f"Hello, from example2.py using {sys.executable}")
+print(f"Hello, from {Path(__file__).name} using {sys.executable}")
 time.sleep(3)
-print(f"Bye, from example2.py using {sys.executable}")
+print(f"Bye, from {Path(__file__).name} using {sys.executable}")
 

@@ -35,7 +35,14 @@ func TestParseFile(t *testing.T) {
 			Name: "Example Dockerfile Job",
 			Desc: "Say hello every 14 seconds",
 			Cron: "*/14 * * * * *",
-			Cmd:  "docker build -f $f -t ${f%.*} . && docker run -t ${f%.*}",
+			Cmd:  "docker build -f $f -t ${f%.*} . && docker run --rm ${f%.*}",
+		},
+		{
+			File: "example5.py",
+			Name: "Example Python2 Job",
+			Desc: "Say hello every 22 seconds",
+			Cron: "*/22 * * * * *",
+			Cmd:  "./example5.py",
 		},
 		{
 			File: "ignore.go",
