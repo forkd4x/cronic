@@ -43,7 +43,7 @@ func (job *Job) ParseFile() error {
 		return fmt.Errorf("failed to read file %s: %w", job.File, err)
 	}
 
-	re := regexp.MustCompile(`(?m)^\W+(?:\s(cronic)|\s\s+(\w+)):\s*([^:\n]*)\n`)
+	re := regexp.MustCompile(`(?m)^\W+(?:\s(cronic)|\s\s+(\w+)):\s*?([^\n]*)\n`)
 	matches := re.FindAllStringSubmatch(string(buffer), -1)
 	if matches == nil || matches[0][1] != "cronic" {
 		return nil
@@ -57,9 +57,9 @@ func (job *Job) ParseFile() error {
 		key, value := match[2], match[3]
 		// Quote cron expressions containing asterisks if not already quoted
 		if key == "cron" && strings.Contains(value, "*") && !strings.HasPrefix(value, "\"") {
-			value = "\"" + value + "\""
+			value = "\"" + strings.TrimSpace(value) + "\""
 		}
-		yamlLines = append(yamlLines, key+": "+value)
+		yamlLines = append(yamlLines, key+": "+strings.TrimSpace(value))
 	}
 	yamlData := strings.Join(yamlLines, "\n")
 

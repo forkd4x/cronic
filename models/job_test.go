@@ -45,6 +45,13 @@ func TestParseFile(t *testing.T) {
 			Cmd:  "./example5.py",
 		},
 		{
+			File: "example6.php",
+			Name: "Example PHP5 Job",
+			Desc: "Say hello every 26 seconds",
+			Cron: "*/26 * * * * *",
+			Cmd:  "docker run --rm -v .:/app php:5.6-cli php /app/$f",
+		},
+		{
 			File: "ignore.go",
 			Name: "",
 			Desc: "",
