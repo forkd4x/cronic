@@ -29,7 +29,7 @@ func (s Server) RenderTemplate(name string, data any) ([]byte, error) {
 	return b.Bytes(), err
 }
 
-func NewServer() Server {
+func NewServer(cronic *Cronic) Server {
 	e := echo.New()
 
 	// Serve embedded static files
@@ -52,6 +52,20 @@ func NewServer() Server {
 			"Time": &now,
 			"Jobs": jobs,
 		})
+	})
+
+	e.GET("/run/:id", func(c echo.Context) error {
+		var job models.Job
+		models.DB.First(&job, c.Param("id"))
+		if job.Name == "" {
+			return echo.NewHTTPError(http.StatusNotFound, "job not found")
+		}
+		j, err := cronic.GetJobByID(job.SchedulerID)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusNotFound, "scheduler job not found")
+		}
+		j.RunNow()
+		return c.String(http.StatusNoContent, "")
 	})
 
 	s := sse.New()

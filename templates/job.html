@@ -6,5 +6,6 @@
 	<td class="text-center">{{ formatDuration . }}</td>
 	<td class="{{ getStatusClass .Status }}">{{ .Status }}</td>
 	<td>{{ formatDate .NextRun }} <span class="float-end">{{ formatTime .NextRun }}</span></td>
+	<td><a href="/run/{{ .ID }}" hx-get="/run/{{ .ID }}">Run</a></td>
 </tr>
 {{ end }}

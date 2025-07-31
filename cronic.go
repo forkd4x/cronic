@@ -45,7 +45,7 @@ func NewCronic(root string) (*Cronic, error) {
 	if err != nil {
 		return cronic, fmt.Errorf("failed to initialize scheduler: %w", err)
 	}
-	cronic.Server = NewServer()
+	cronic.Server = NewServer(cronic)
 	return cronic, nil
 }
 
@@ -248,6 +248,16 @@ func (cronic *Cronic) LoadJobs() error {
 		models.DB.Delete(&job)
 	}
 	return nil
+}
+
+func (cronic *Cronic) GetJobByID(uuid uuid.UUID) (gocron.Job, error) {
+	jobs := cronic.Scheduler.Jobs()
+	for _, job := range jobs {
+		if job.ID() == uuid {
+			return job, nil
+		}
+	}
+	return nil, errors.New("could not find job by id")
 }
 
 func (cronic *Cronic) Publish(event *sse.Event) {
