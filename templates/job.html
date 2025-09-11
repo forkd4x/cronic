@@ -3,9 +3,25 @@
 	<td>{{ .Name }}</td>
 	<td>{{ .CronHuman }}</td>
 	<td>{{ formatDate .LastRun }} <span class="float-end">{{ formatTime .LastRun }}</span></td>
-	<td class="text-center">{{ formatDuration . }}</td>
-	<td class="{{ getStatusClass .Status }}">{{ .Status }}</td>
-	<td>{{ formatDate .NextRun }} <span class="float-end">{{ formatTime .NextRun }}</span></td>
+	<td>{{ formatDuration . }}</td>
+	<td
+		{{if eq .Status "Running"}}
+			class="bold"
+		{{else if eq .Status "Pending"}}
+			class="pico-background-sand-50"
+		{{else if eq .Status "Success"}}
+			class="pico-background-green-400"
+		{{else if eq .Status "Warning"}}
+			class="pico-background-amber-450"
+		{{else if eq .Status "Error"}}
+			class="pico-background-red-450"
+		{{else if eq .Status "Missed"}}
+			class="pico-background-sand-500"
+		{{end}}
+	>
+		{{ .Status }}
+	</td>
+	<td>{{ formatDate .NextRun }} <span>{{ formatTime .NextRun }}</span></td>
 	<td><a href="/run/{{ .ID }}" hx-get="/run/{{ .ID }}">Run</a></td>
 </tr>
 {{ end }}

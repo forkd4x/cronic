@@ -27,7 +27,6 @@ func TemplateRenderer() *Template {
 			template.
 				New("").
 				Funcs(template.FuncMap{
-					"getStatusClass": getStatusClass,
 					"formatDate":     formatDate,
 					"formatTime":     formatTime,
 					"formatDuration": formatDuration,
@@ -35,23 +34,6 @@ func TemplateRenderer() *Template {
 				}).
 				ParseFS(templateFiles, "templates/*.html"),
 		),
-	}
-}
-
-func getStatusClass(status string) string {
-	switch status {
-	case "Pending":
-		return "bg-light text-secondary"
-	case "Running":
-		return "text-primary"
-	case "Success":
-		return "bg-success bg-opacity-10 text-success"
-	case "Warning":
-		return "bg-warning bg-opacity-10 text-warning"
-	case "Error", "Missed":
-		return "bg-danger bg-opacity-10 text-danger"
-	default:
-		return ""
 	}
 }
 

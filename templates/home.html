@@ -5,25 +5,23 @@
 		<meta charset="utf-8"/>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 		<title>Cronic Scheduler</title>
-		<link href="/static/bootstrap.v5.3.7.min.css" rel="stylesheet" type="text/css"/>
+		<link href="/static/pico.css" rel="stylesheet">
+		<link href="/static/pico.colors.css" rel="stylesheet">
 		<script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js"></script>
 		<script src="https://cdn.jsdelivr.net/npm/htmx-ext-sse@2.2.2"></script>
-		<link href="/static/cronic.css" rel="stylesheet" type="text/css"/>
 		<style>
-			body {
-				font-size: 14px;
-				line-height: 16px;
+			:root {
+				--pico-font-size: 14px;
 			}
+			.bold { font-weight: bold; }
+			th, tbody tr:last-child td { border-bottom: 2px solid black; }
 		</style>
 	</head>
-	<body class="font-monospace p-3" hx-ext="sse" sse-connect="/sse?stream=updates">
-		<div class="container">
-			<div class="row">
-				<h5>Cronic Scheduler</h5>
-				{{ template "jobs.html" . }}
-			</div>
-		</div>
-		<script src="/static/bootstrap.v5.3.7.min.js"></script>
+	<body hx-ext="sse" sse-connect="/sse?stream=updates">
+		<main class="container">
+			<h3>Cronic Scheduler</h3>
+			{{ template "jobs.html" . }}
+		</main>
 	</body>
 </html>
 {{ end }}

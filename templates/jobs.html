@@ -1,6 +1,6 @@
 {{ define "jobs.html" }}
 {{ $divider := "" }}
-<table class="table table-bordered border rounded" sse-swap="table" hx-swap="outerHTML">
+<table sse-swap="table" hx-swap="outerHTML">
 	<thead>
 		<tr>
 			<th>Job</th>
@@ -10,7 +10,7 @@
 			<th>Status</th>
 			<th>
 				Next Run
-				<span class="float-end" sse-swap="time" hx-swap="innerHTML">{{ formatTime .Time }}</span>
+				<span sse-swap="time" hx-swap="innerHTML">{{ formatTime .Time }}</span>
 			</th>
 			<th>Actions</th>
 		</tr>
@@ -23,7 +23,7 @@
 			{{ end }}
 		{{ end }}
 	</tbody>
-	<tbody class="{{ $divider }}">
+	<tbody>
 		{{ range .Jobs }}
 			{{ if ne .Status "Running" }}
 				{{ template "job.html" . }}
